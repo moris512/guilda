@@ -1,23 +1,36 @@
-classdef network_IEEE68bus < power_network
-% モデル  ：IEEE68母線モデル
-%・母線1~16が発電機母線として"generator_1axis"が付加
-%・母線[17,18,20~29,33,36,39~42,44~53,55,56,59~61,64,67,68]母線は負荷母線として"load_impedance"が付加
-%・母線[19,22,30~32,34,35,37,38,43,54,57,58,62,63,65,66]はnon-unit母線として"component_empty"が付加
+classdef network_IEEE9busClassic < power_network
+% モデル  ：IEEE9母線モデル
+%・母線1~3が発電機母線として"generator_1axis"が付加
+%・母線[5,6,8]母線は負荷母線として"load_impedance"が付加
+%・母線[4,7,9]はnon-unit母線として"component_empty"が付加
 %親クラス：power_networkクラス
-%実行方法：net = network_IEEE68bus();
+%実行方法：net = network_IEEE9bus();
 %　引数　：なし
 %　出力　：`power_network`クラスの変数
     properties
     end
 
     methods
-        function obj = network_IEEE68bus()
+        function obj = network_IEEE9busClassic(gen_model)
+        
+        if nargin<1
+            gen_model = 'generator_classical';
+        end
+        netname = 'IEEE9bus';
+
         omega0 = 60*2*pi;
-        bus = readtable('parameters/IEEE68bus/bus.csv');
-        branch = readtable('parameters/IEEE68bus/branch.csv');
-        machinery = readtable('parameters/IEEE68bus/machinery.csv');
-        excitation = readtable('parameters/IEEE68bus/excitation.csv');
-        pss_data = readtable('parameters/IEEE68bus/pss.csv');
+        bus         = readtable(['parameters/',netname,'/bus.csv']);
+        branch      = readtable(['parameters/',netname,'/branch.csv']);
+        machinery   = readtable(['parameters/',netname,'/machinery.csv']);
+        excitation  = readtable(['parameters/',netname,'/excitation.csv']);
+        pss_data    = readtable(['parameters/',netname,'/pss.csv']);
+        
+%         mX = mean(machinery{:,{'Xd','Xq'}},2);
+%         machinery{:,'Xq'} = mX;
+%         machinery{:,'Xd'} = mX;
+%         mXp = mean(machinery{:,{'Xd_prime','Xq_prime'}},2);
+%         machinery{:,'Xq_prime'} = mXp;
+%         machinery{:,'Xd_prime'} = mXp;
         
         for i = 1:size(bus, 1)
             shunt = bus{i, {'G_shunt', 'B_shunt'}};
@@ -26,13 +39,13 @@ classdef network_IEEE68bus < power_network
                     V_abs = bus{i, 'V_abs'};
                     V_angle = bus{i, 'V_angle'};
                     obj.add_bus(bus_slack(V_abs, V_angle, shunt));
-                    obj.set_generator(i, machinery, excitation, pss_data, omega0);
+                    obj.set_generator(i, machinery, excitation, pss_data, omega0, gen_model);
                     
                 case 2
                     V_abs = bus{i, 'V_abs'};
                     P = bus{i, 'P_gen'};
                     obj.add_bus(bus_PV(P, V_abs, shunt));
-                    obj.set_generator(i, machinery, excitation, pss_data, omega0);
+                    obj.set_generator(i, machinery, excitation, pss_data, omega0,gen_model);
                     
                 case 3
                     P = bus{i, 'P_load'};
@@ -42,7 +55,6 @@ classdef network_IEEE68bus < power_network
                         load = load_impedance();
                         obj.a_bus{end}.set_component(load);
                     end
-                    
             end
         end
         
@@ -62,16 +74,19 @@ classdef network_IEEE68bus < power_network
         
         end
         
-        function set_generator(obj, i, machinery, excitation, pss_data, omega0)
+        function set_generator(obj, i, machinery, excitation, pss_data, omega0, gen_model)
+            generator = str2func(gen_model);
             idx = machinery{:, 'No_bus'} == i;
             if sum(idx) ~= 0
-                g = generator_1axis(omega0, machinery(idx, :));
-                % ex = excitation(excitation{:, 'No_bus'}==i, :);
-                % g.set_avr(avr_sadamoto2019(ex));
-                % p = pss_data(pss_data{:, 'No_bus'}==i, :);
-                % g.set_pss(pss(p));
+                g = generator(omega0, machinery(idx, :));
+                %ex = excitation(excitation{:, 'No_bus'}==i, :);
+                %g.set_avr(avr_sadamoto2019(ex));
+                g.set_avr(avr());
+                %p = pss_data(pss_data{:, 'No_bus'}==i, :);
+                %g.set_pss(pss(p));
             end
             obj.a_bus{end}.set_component(g)
         end
+
     end
 end
