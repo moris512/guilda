@@ -5,8 +5,8 @@ numGenerators = 2;
 %Branch Definition
 branch12 = branch_pi(1,2,[0.010,0.085],0);
 net.add_branch(branch12);
-branch23 = branch_pi(2,3,[0.017,0.092],0);
-net.add_branch(branch23);
+%branch23 = branch_pi(2,3,[0.017,0.092],0);
+%net.add_branch(branch23);
 %Definition of busbar (bus)
 shunt = [0,0];
 %Definition of busbar 1
@@ -16,8 +16,8 @@ net.add_bus(bus_1);
 bus_2 = bus_PV(0.5,2,shunt);
 net.add_bus(bus_2);
 %Definition of busbar 3
-bus_3 = bus_PQ(-3,0,shunt);
-net.add_bus(bus_3);
+%bus_3 = bus_PQ(-3,0,shunt);
+%net.add_bus(bus_3);
 %Definition of grid frequency
 omega0 = 60*2*pi;
 %1-axis model of synchronous generator added to bus-bar 1
@@ -43,12 +43,13 @@ mac_data = table(Xd,Xq,M,D);
 comp2 = generator_classical(omega0, mac_data);
 net.a_bus{2}.set_component(comp2);
 %A constant impedance model is added to bus-bar 3
-comp3 = load_impedance();
-net.a_bus{3}.set_component(comp3);
+%comp3 = load_impedance();
+%net.a_bus{3}.set_component(comp3);
 %Running tidal current calculations
 net.initialize
 %Aside ~Derivation of admittance matrix~.
-Y = full(net.get_admittance_matrix);
+net.get_admittance_matrix
+Y = full(net.get_admittance_matrix)
 %% Simulation run (without controller)
 %Condition Setting
 option = struct();
@@ -60,9 +61,10 @@ option.x0_sys = net.x_equilibrium;
 %option.I0 = net.I_equilibrium;
 %time = [0,30];
 %out1 = net.simulate(time,option);
-time = [0,5,60];
-u_idx = 3;
-u = [0, 0.1, 0.1; 0, 0, 0];
+time = [0,0.1,60];
+u_idx = 1;
+%u = [0.1, 0.1; 0, 0];
+u = [0, 0, 0; 0.1, 0, 0];
 
 %Input signal waveform plot
 % figure; hold on;
@@ -81,6 +83,8 @@ out1 = net.simulate(time,u, u_idx, option);
 
 %%
 %Plot Results
+V2 = out1.V{2}(:,1) + 1j* out1.V{2}(:,2);
+V1 = out1.V{1}(:,1) + 1j* out1.V{1}(:,2);
 sampling_time = out1.t;
 delta1 = out1.X{1}(:,1);
 omega1 = out1.X{1}(:,2);
@@ -114,7 +118,7 @@ out2 = net.simulate(time,u,u_idx,option);
 %Plot Results
 figure;
 hold on;
-arrayfun(@(idx) plot(out2.t,out2.X{idx}(:,1), 'LineWidth',1.5),1:numGenerators);
+arrayfun(@(idx) plot(out2.t,out2.X{idx}(:,2), 'LineWidth',1.5),1:numGenerators);
 xlabel('Time [s]','FontSize',10);
 ylabel('Frequency Deviation','FontSize',10);
 legendEntries = cell(1, numGenerators);
@@ -139,7 +143,7 @@ title('Frequency Deviation Synchronous Generator','FontSize',20)
 hold off
 %% To Retrieve Data
 filename = 'FDeviation.csv';
-matrixToSave = [num2cell(out2.t), num2cell(out2.X{1}(:,2)), num2cell(out2.X{2}(:,2))];
+matrixToSave = [num2cell(out1.t), num2cell(out1.X{2}(:,1)), num2cell(out1.X{2}(:,2)), num2cell(out1.X{1}(:,1))];
 writecell(matrixToSave,filename);
 %% Obtain the Graph of the Network
 branch_num = numel(net.a_branch);
