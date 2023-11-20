@@ -93,11 +93,12 @@ delta2 = out1.X{2}(:,1);
 omega2 = out1.X{2}(:,2);
 figure;
 hold on;
-plot(sampling_time, omega1,'LineWidth',2)
-plot(sampling_time, omega2,'LineWidth',2)
+plot(sampling_time, omega1,'LineWidth',1.5)
+plot(sampling_time, omega2,'LineWidth',1.5)
 %arrayfun(@(idx) plot(out1.t,out1.X{idx}(:,2), 'LineWidth',1.5),1:numGenerators);
 xlabel('Time [s]','FontSize',10);
 ylabel('Frequency Deviation','FontSize',10);
+xlim([0,20])
 legendEntries = cell(1, numGenerators);
 for i = 1:numGenerators
     legendEntries{i} = sprintf('Generator %d', i);
