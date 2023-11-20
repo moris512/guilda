@@ -1,4 +1,4 @@
-%Neural ODE - Example
+%Neural ODE - Base
 addpath('C:\Users\LEGION\Documents\GitHub\guilda');
 addpath('C:\Users\LEGION\Documents\MATLAB\Examples\R2022a\nnet\TrainNeuralODENetworkWithRungeKuttaODESolverExample');
 
@@ -21,14 +21,14 @@ xlabel("x(1)")
 ylabel("x(2)")
 grid on
 
-%%Model Parameters
+%% Model Parameters
 neuralOdeTimesteps = 40; %compared to the 2000
 dt = t(2); %the delta of time
 timesteps = (0:neuralOdeTimesteps)*dt; %make 40 time steps separated by dt.
 
 neuralOdeParameters= struct;
 stateSize = size(xTrain,1); %The size of the first dimension (rows)
-hiddenSize = 20; %The hidden layers.
+hiddenSize = 20; %The hidden neurons.
 
 %Fully Connected Layer 1 (From 2 states to 20 hidden states)
 neuralOdeParameters.fc1 = struct; %Learnable parameter.

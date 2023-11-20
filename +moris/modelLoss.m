@@ -1,8 +1,8 @@
 function [loss,gradients] = modelLoss(tspan,X0,neuralOdeParameters,targets)
 %Compute predictions
 X = model(tspan,X0,neuralOdeParameters);
-%Compute L1 loss
-loss = l1loss(X,targets,NormalizationFactor='all-elements',DataFormat='CBT');
+%Compute L2 loss
+loss = l2loss(X,targets,NormalizationFactor='all-elements',DataFormat='CBT');
 %Compute gradients
-gradients = dlgradients(loss,neuralOdeParameters);
+gradients = dlgradient(loss,neuralOdeParameters);
 end
