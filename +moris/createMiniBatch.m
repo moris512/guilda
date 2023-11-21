@@ -1,10 +1,10 @@
-function [x0,targets] = createMiniBatch(numTimesteps,numTimesPerObs,miniBatchSize,X)
+function [x0,targets] = createMiniBatch(numTimeSteps,numTimesPerObs,miniBatchSize,X)
 %Args:
 %1.Total number of time steps in the input data.
 %2. Number of time steps per observation.
 %3. Mini-Batch size to be generated.
 %4. Input data.
-s = randperm(numTimesteps - numTimesPerObs, miniBatchSize); %Generates random
+s = randperm(numTimeSteps - numTimesPerObs, miniBatchSize); %Generates random
 %set of indices. The range is limited to the difference to ensure that
 %there is enough tie steps for each sequence.
 x0 = dlarray(X(:,s)); %Extracts the initial states for each sequence.
