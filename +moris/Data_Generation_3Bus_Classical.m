@@ -20,7 +20,7 @@ net.add_bus(bus_2);
 %net.add_bus(bus_3);
 %Definition of grid frequency
 omega0 = 60*2*pi;
-%1-axis model of synchronous generator added to bus-bar 1
+%model of synchronous generator added to bus-bar 1
 Xd = 1.569;
 %Xd_prime = 0.963;
 Xq = 0.963;
@@ -31,7 +31,7 @@ D = 10;
 mac_data = table(Xd,Xq,M,D);
 component1 = generator_classical(omega0, mac_data);
 net.a_bus{1}.set_component(component1);
-%A single axis model of a synchronous generator is also added to busbar 2.
+%model of a synchronous generator is also added to busbar 2.
 Xd = 1.220; 
 %Xd_prime = 0.667; 
 Xq = 0.667; 
@@ -61,7 +61,7 @@ option.x0_sys = net.x_equilibrium;
 %option.I0 = net.I_equilibrium;
 %time = [0,30];
 %out1 = net.simulate(time,option);
-%time = [0,0.1,60];
+time = [0,0.1,30];
 u_idx = 1;
 %u = [0.1, 0.1; 0, 0];
 u = [0, 0, 0; 0.1, 0, 0];
