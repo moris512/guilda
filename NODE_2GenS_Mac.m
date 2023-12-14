@@ -5,8 +5,8 @@
 %4. Model Evaluation.
 %% 1. Data Generation
 %1.1 Network Setup - 2-Classical SG system.
-%addpath('C:\Users\LEGION\Documents\GitHub\guilda');
-%addpath('C:\Users\LEGION\Documents\MATLAB\Examples\R2022a\nnet\TrainNeuralODENetworkWithRungeKuttaODESolverExample');
+addpath('/Users/morispolanco/Documents/GitHub/guilda');
+addpath('/Users/morispolanco/Documents/MATLAB/Examples/R2023a/nnet/TrainNeuralODENetworkWithRungeKuttaODESolverExample');
 net = power_network;
 numGenerators = 2;
 %Branch Definition
@@ -73,7 +73,7 @@ I1 = out1.I{1}(:,1) + 1j* out1.I{1}(:,2);
 V2 = out1.V{2}(:,1) + 1j* out1.V{2}(:,2);
 I2 = out1.I{2}(:,1) + 1j* out1.I{2}(:,2);
 sampling_time = out1.t(34:end,1) - 0.0999; %Start from t = 0.1 (i.e., 34)
-sampling_time = cat(1,[0],sampling_time);
+sampling_time = cat(1,0,sampling_time);
 delta1 = out1.X{1}(33:end,1);
 omega1 = out1.X{1}(33:end,2);
 %E1 = out.1X{1}(:,3);
@@ -249,3 +249,90 @@ for iter = 1:numIter
         drawnow
     end
 end
+%% Auxiliar Functions
+function [x0,targets] = createMiniBatch(numTimeSteps,numTimesPerObs,miniBatchSize,X)
+%Args:
+%1.Total number of time steps in the input data.
+%2. Number of time steps per observation.
+%3. Mini-Batch size to be generated.
+%4. Input data.
+s = randperm(numTimeSteps - numTimesPerObs, miniBatchSize); %Generates random
+%set of indices. The range is limited to the difference to ensure that
+%there is enough tie steps for each sequence.
+x0 = dlarray(X(:,s)); %Extracts the initial states for each sequence.
+targets = zeros([size(X,1) miniBatchSize numTimesPerObs]); %initializes as 0
+for i = 1:miniBatchSize
+    targets(:,i, 1:numTimesPerObs) = X(:, s(i) + 1:(s(i) + numTimesPerObs));
+end
+%copies the actual values of the input data and assignes to the minibatch.
+end
+
+function [loss,gradients] = modelLoss(tspan,X0,neuralOdeParameters,targets)
+%Compute predictions
+X = model(tspan,X0,neuralOdeParameters);
+%Compute L2 loss
+loss = l2loss(X,targets,NormalizationFactor='all-elements',DataFormat='CBT');
+%Compute gradients
+gradients = dlgradient(loss,neuralOdeParameters);
+end
+
+function X = model(tspan,X0, neuralOdeParameters)
+X = dlode45(@odeModel,tspan,X0,neuralOdeParameters,DataFormat='CB',GradientMode='adjoint');
+%For each observation, this function takes a vector of length "state size"
+%as initial condition for numerically solving the odeModel function.
+end
+
+function y = odeModel(~,y,theta)
+%Takes as input time (ununsed), the real solution (y), and the parameters
+y = tanh(theta.fc1.Weights*y + theta.fc1.Bias);
+y = theta.fc2.Weights*y + theta.fc2.Bias;
+%Fully connected operation
+end
+
+function parameter = initializeZeros(sz,className)
+
+arguments
+    sz
+    className = 'single'
+end
+
+parameter = zeros(sz,className);
+parameter = dlarray(parameter);
+
+end
+
+function weights = initializeGlorot(sz,numOut,numIn,className)
+
+arguments
+    sz
+    numOut
+    numIn
+    className = 'single'
+end
+
+Z = 2*rand(sz,className) - 1;
+bound = sqrt(6 / (numIn + numOut));
+
+weights = bound * Z;
+weights = dlarray(weights);
+
+end
+
+function plotTrueAndPredictedSolutions(xTrue,xPred)
+xPred = squeeze(xPred)';
+err = mean(abs(xTrue(2:end,:) - xPred), 'all');
+
+plot(xTrue(:,1),xTrue(:,2),"r--",xPred(:,1),xPred(:,2),"b-",LineWidth=1)
+
+title("Absolute Error = " + num2str(err,"%.4f"))
+xlabel("x(1)")
+ylabel("x(2)")
+
+xlim([-2 3])
+ylim([-2 3])
+
+legend("Ground Truth","Predicted")
+
+end
+
+
