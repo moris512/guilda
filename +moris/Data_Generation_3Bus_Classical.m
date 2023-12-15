@@ -21,7 +21,8 @@ net.add_bus(bus_2);
 %Definition of grid frequency
 omega0 = 60*2*pi;
 %model of synchronous generator added to bus-bar 1
-Xd = 1.569;
+%Xd = 1.569;
+Xd = 0.963;
 %Xd_prime = 0.963;
 Xq = 0.963;
 %Tdo = 5.14;
@@ -32,7 +33,8 @@ mac_data = table(Xd,Xq,M,D);
 component1 = generator_classical(omega0, mac_data);
 net.a_bus{1}.set_component(component1);
 %model of a synchronous generator is also added to busbar 2.
-Xd = 1.220; 
+%Xd = 1.220; 
+Xd = 0.667;
 %Xd_prime = 0.667; 
 Xq = 0.667; 
 %Tdo = 8.97; 
@@ -56,15 +58,15 @@ option = struct();
 option.linear = false;
 option.x0_sys = net.x_equilibrium;
 %option.tools = true;
-%option.x0_sys(2) = option.x0_sys(2)+0.01;
+option.x0_sys(1) = option.x0_sys(1)+pi/6;
 %option.V0 = net.V_equilibrium;
 %option.I0 = net.I_equilibrium;
 %time = [0,30];
 %out1 = net.simulate(time,option);
-time = [0,0.1,30];
-u_idx = 1;
+time = [0,30];
+%u_idx = 1;
 %u = [0.1, 0.1; 0, 0];
-u = [0, 0, 0; 0.1, 0, 0];
+%u = [0, 0, 0; 0.1, 0, 0];
 
 %Input signal waveform plot
 % figure; hold on;
@@ -79,8 +81,8 @@ u = [0, 0, 0; 0.1, 0, 0];
 % hold off;
 
 %Analysis Execution
-out1 = net.simulate(time,u, u_idx, option);
-
+%out1 = net.simulate(time,u, u_idx, option);
+out1 = net.simulate(time, option);
 %%
 %Plot Results
 V2 = out1.V{2}(:,1) + 1j* out1.V{2}(:,2);
@@ -98,7 +100,7 @@ plot(sampling_time, omega2,'LineWidth',1.5)
 %arrayfun(@(idx) plot(out1.t,out1.X{idx}(:,2), 'LineWidth',1.5),1:numGenerators);
 xlabel('Time [s]','FontSize',10);
 ylabel('Frequency Deviation','FontSize',10);
-xlim([0,20])
+xlim([0,30])
 legendEntries = cell(1, numGenerators);
 for i = 1:numGenerators
     legendEntries{i} = sprintf('Generator %d', i);

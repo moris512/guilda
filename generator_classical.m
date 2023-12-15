@@ -281,7 +281,6 @@ classdef generator_classical < component
             Xq = obj.parameter{:, 'Xq'};
             Xd = obj.parameter{:, 'Xd'};
             delta = Vangle + atan(P/(Q+Vabs^2/Xq));
-
             Id = real(  1j*I*exp(-1j*delta) );
             Vq = imag(  1j*V*exp(-1j*delta) );
             obj.Vfd = Id*Xd+Vq;
